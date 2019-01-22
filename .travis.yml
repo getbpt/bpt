@@ -1,28 +1,24 @@
-language: go
-go: '1.11.x'
-env:
-  - GO111MODULE=on
-install:
-  - make setup
-  - npm install -g prettier
-script: make ci
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
-  - make static
-deploy:
-  - provider: pages
-    skip_cleanup: true
-    github_token: "$GITHUB_TOKEN"
-    local_dir: www/public
-    target_branch: master
-    repo: getantibody/getantibody.github.io
-    verbose: true
-    on:
-      branch: master
-  - provider: script
-    skip_cleanup: true
-    script: curl -sL https://git.io/goreleaser | bash -s -- --rm-dist
-    on:
-      tags: true
-notifications:
-  email: false
+language:
+  go
+os:
+  - linux
+  - osx
+install: ./scripts/prepare.sh
+script: ./scripts/build.sh
+jobs:
+  include:
+    - stage: deploy
+      if: tag IS present
+      os: linux
+      install: ./scripts/prepare.sh
+      script: ./scripts/package.sh
+      deploy:
+        provider: releases
+        api_key:
+          secure: LPHObQbCbqHV0IwhiwpWv1+Eh/6Wvp6m1MTHoUWSmS77S2e+IxiXXQXtU5tCHW2epZdL7HzQWgCfK40MD8uEv7vXdfvfWtVz7Y5NI5FU57zQa9U/43GDSWOFX8AbfLo+/HWbbVQNKshkmaW7x/9OtPOMnc8Ij60SZNEWvyYeNCb5trd5Qj4CgHO97gddRDNW5MoH5ldGMVqPmvc5y7SUqxKs/AUjghH7yoeBEUX2N0JRUHmfDhWS7aa6CbYaWNOc8v/3CiyeZwbE6qAvoQkwDg2gyLEnGxB7mIGper9/YVKDpU6PCEGY2044N8aHiDaDdBgY5IahLBZOSsWy8oz7LcIKa2h+58Exkc8HlLiKs2XxFrTqQ73k2cwuu4875oc5iStem8PBKGWvY7ALBpdrIVkvDrt0n+l3dkN5zdhpF59StZeAxjq3dW6EoAYi41olfMPvTNizTqhWHR9IGbtGgMH/Byg9Q2gvMLLF2lDjnsXWJNHYTvooPpV1NcwS35u4WeGAk1jwzEvs3hWxqVqMqPp+w+drr9+J3mZxw/lRG1/2hnpGwCTUQ1aU2s3cqFajcsEZ22f+OQ8r8m1aE9Y3NKCIygNKIP5JQy23VEbu4zj5gY7Zh2fP51tFAKyf8kdS/sjhLMpb9hQzbvdWz/hwQW5MCbbJShBsRAYBK2EXQgM=
+        file_glob: true
+        file: dist/*
+        skip_cleanup: true
+        on:
+          repo: getbpt/bpt
+          tags: true

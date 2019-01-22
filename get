@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+ensure_bpt_is_installed() {
+  local binary_dir="$PWD/.runtime/.bin"
+  local releases_url="https://github.com/getbpt/bpt/releases"
+  local latest_version
+  mkdir -p "$binary_dir" || echo "failed to create binary directory: $?;exit 1"
+  latest_version="$(curl -sLN -o /dev/null -w %{url_effective} "$releases_url/latest" | rev | cut -f1 -d'/'| rev)" || echo "failed to determine latest version: $?;exit 1"
+  curl -sLN "$releases_url/download/$latest_version/bpt-$(uname -s)-$(uname -m).tar.gz" | tar xzf - -C "$binary_dir" || echo "failed to download an decompress bpt: $?;exit 1"
+  export PATH="$binary_dir:$PATH"
+  eval "$(${binary_dir}/bpt init)"
+}
+
+ensure_bpt_is_installed "$@"

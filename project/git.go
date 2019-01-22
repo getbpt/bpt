@@ -1,7 +1,6 @@
 package project
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -9,13 +8,15 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/getantibody/folder"
+	"github.com/getbpt/folder"
 )
 
 type gitProject struct {
-	URL     string
+	name    string
 	Version string
+	URL     string
 	folder  string
+	path    string
 	inner   string
 }
 
@@ -28,10 +29,35 @@ func NewClonedGit(home, folderName string) Project {
 		version = "master"
 	}
 	url := folder.ToURL(folderName)
+	var name string
+	switch {
+	case strings.HasPrefix(url, "https://bitbucket.org/"):
+		name = strings.TrimPrefix(url, "https://bitbucket.org/")
+	case strings.HasPrefix(url, "https://gitlab.com/"):
+		fallthrough
+	case strings.HasPrefix(url, "https://github.com/"):
+		name = strings.TrimPrefix(url, "https://")
+	case strings.HasPrefix(url, "http://"):
+		fallthrough
+	case strings.HasPrefix(url, "https://"):
+		fallthrough
+	case strings.HasPrefix(url, "git://"):
+		fallthrough
+	case strings.HasPrefix(url, "ssh://"):
+		fallthrough
+	case strings.HasPrefix(url, "git@gitlab.com:"):
+		fallthrough
+	case strings.HasPrefix(url, "git@bitbucket.org:"):
+		fallthrough
+	case strings.HasPrefix(url, "git@github.com:"):
+		name = url
+	}
 	return gitProject{
-		folder:  folderPath,
+		name:    name,
 		Version: version,
 		URL:     url,
+		folder:  folderName,
+		path:    folderPath,
 	}
 }
 
@@ -55,7 +81,7 @@ func NewGit(cwd, line string) Project {
 		}
 	}
 	repo := parts[0]
-	url := "https://github.com/" + repo
+	url := "https://bitbucket.org/" + repo
 	switch {
 	case strings.HasPrefix(repo, "http://"):
 		fallthrough
@@ -67,14 +93,25 @@ func NewGit(cwd, line string) Project {
 		fallthrough
 	case strings.HasPrefix(repo, "git@gitlab.com:"):
 		fallthrough
+	case strings.HasPrefix(repo, "git@bitbucket.org:"):
+		fallthrough
 	case strings.HasPrefix(repo, "git@github.com:"):
 		url = repo
+	case strings.HasPrefix(repo, "gitlab.com/"):
+		fallthrough
+	case strings.HasPrefix(repo, "bitbucket.org/"):
+		fallthrough
+	case strings.HasPrefix(repo, "github.com/"):
+		url = "https://" + repo
 	}
-	folder := filepath.Join(cwd, folder.FromURL(url))
+	folder := folder.FromURL(url)
+	path := filepath.Join(cwd, folder)
 	return gitProject{
+		name:    repo,
 		Version: version,
 		URL:     url,
 		folder:  folder,
+		path:    path,
 		inner:   inner,
 	}
 }
@@ -83,18 +120,18 @@ func NewGit(cwd, line string) Project {
 var locks sync.Map
 
 func (g gitProject) Download() error {
-	l, _ := locks.LoadOrStore(g.folder, &sync.Mutex{})
+	l, _ := locks.LoadOrStore(g.path, &sync.Mutex{})
 	lock := l.(*sync.Mutex)
 	lock.Lock()
 	defer lock.Unlock()
-	if _, err := os.Stat(g.folder); os.IsNotExist(err) {
+	if _, err := os.Stat(g.path); os.IsNotExist(err) {
 		// #nosec
 		var cmd = exec.Command("git", "clone",
 			"--recursive",
 			"--depth", "1",
 			"-b", g.Version,
 			g.URL,
-			g.folder)
+			g.path)
 		cmd.Env = append(os.Environ(), "GIT_TERMINAL_PROMPT=0")
 
 		if bts, err := cmd.CombinedOutput(); err != nil {
@@ -106,18 +143,21 @@ func (g gitProject) Download() error {
 }
 
 func (g gitProject) Update() error {
-	fmt.Println("updating:", g.URL)
 	// #nosec
 	if bts, err := exec.Command(
-		"git", "-C", g.folder, "pull",
+		"git", "-C", g.path, "pull",
 		"--recurse-submodules",
 		"origin",
 		g.Version,
 	).CombinedOutput(); err != nil {
-		log.Println("git update failed for", g.folder, string(bts))
+		log.Println("git update failed for", g.path, string(bts))
 		return err
 	}
 	return nil
+}
+
+func (g gitProject) Remove() error {
+	return os.RemoveAll(g.path)
 }
 
 func branch(folder string) (string, error) {
@@ -129,5 +169,13 @@ func branch(folder string) (string, error) {
 }
 
 func (g gitProject) Path() string {
-	return filepath.Join(g.folder, g.inner)
+	return filepath.Join(g.path, g.inner)
+}
+
+func (g gitProject) Name() string {
+	return g.name
+}
+
+func (g gitProject) Folder() string {
+	return g.folder
 }

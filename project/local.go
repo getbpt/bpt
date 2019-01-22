@@ -23,6 +23,18 @@ func (l localProject) Update() error {
 	return l.Download()
 }
 
+func (l localProject) Remove() error {
+	return nil
+}
+
 func (l localProject) Path() string {
+	return l.folder
+}
+
+func (l localProject) Name() string {
+	return l.folder
+}
+
+func (l localProject) Folder() string {
 	return l.folder
 }

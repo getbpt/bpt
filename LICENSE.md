@@ -1,6 +1,9 @@
+Copyright for portions of project [bpt](https://github.com/getbpt/bpt/) are held by [Carlos Alexandro Becker, 2015-2017] as part of project [Antibody](https://github.com/getantibody/antibody/). 
+All other copyright for project [bpt](https://github.com/getbpt/bpt/) are held by [Joel Baranick, 2019].
+
 The MIT License (MIT)
 
-Copyright (c) 2015-2017 Carlos Alexandro Becker
+Copyright (c) 2019 Joel Baranick
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

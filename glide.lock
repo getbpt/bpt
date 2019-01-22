@@ -1,0 +1,33 @@
+hash: 3b477866f2322f843b1915dfe8d51b60562de4145e8ed26a399d6c1e46957d14
+updated: 2019-01-25T00:43:52.628947-08:00
+imports:
+- name: github.com/caarlos0/gohome
+  version: 75f08ebc60b144c5c3178115baedce176fdcfe99
+- name: github.com/getbpt/folder
+  version: e1c8390494fbb30bd0ee79d57d2e7d3014a2be45
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
+- name: github.com/spf13/cobra
+  version: ef82de70bb3f60c65fb8eebacbb2d122ef517385
+  subpackages:
+  - cobra
+- name: github.com/spf13/pflag
+  version: 24fa6976df40757dce6aea913e7b81ade90530e1
+- name: github.com/stretchr/testify
+  version: ffdc059bfe9ce6a4e144ba849dbedead332c6053
+  subpackages:
+  - assert
+  - require
+- name: golang.org/x/sync
+  version: 37e7f081c4d4c64e13b10787722085407fe5d15f
+  subpackages:
+  - errgroup
+testImports:
+- name: github.com/davecgh/go-spew
+  version: d8f796af33cc11cb798c1aaeb27a4ebc5099927d
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: 5d4384ee4fb2527b0a1256a821ebfc92f91efefc
+  subpackages:
+  - difflib

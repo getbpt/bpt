@@ -11,7 +11,7 @@ import (
 
 func TestList(t *testing.T) {
 	home := home()
-	require.NoError(t, New(home, "caarlos0/jvm branch:gh-pages").Download())
+	require.NoError(t, New(home, "https://github.com/caarlos0/jvm branch:gh-pages").Download())
 	list, err := List(home)
 	require.NoError(t, err)
 	require.Len(t, list, 1)
@@ -32,17 +32,18 @@ func TestListNonExistentFolder(t *testing.T) {
 
 func TestUpdate(t *testing.T) {
 	home := home()
-	repo := New(home, "caarlos0/ports")
+	repo := New(home, "https://github.com/caarlos0/ports")
 	require.NoError(t, repo.Download())
 	require.NoError(t, repo.Update())
 }
 
 func TestUpdateHome(t *testing.T) {
 	home := home()
-	require.NoError(t, New(home, "caarlos0/jvm").Download())
-	require.NoError(t, New(home, "caarlos0/ports").Download())
+	require.NoError(t, New(home, "https://github.com/caarlos0/jvm").Download())
+	require.NoError(t, New(home, "https://github.com/caarlos0/ports").Download())
 	require.NoError(t, New(home, "/tmp").Download())
 	require.NoError(t, Update(home, runtime.NumCPU()))
+	require.NoError(t, Remove(home, runtime.NumCPU()))
 }
 
 func TestUpdateNonExistentHome(t *testing.T) {
@@ -51,7 +52,7 @@ func TestUpdateNonExistentHome(t *testing.T) {
 
 func TestUpdateHomeWithNoGitProjects(t *testing.T) {
 	home := home()
-	repo := New(home, "caarlos0/jvm")
+	repo := New(home, "https://github.com/caarlos0/jvm")
 	require.NoError(t, repo.Download())
 	require.NoError(t, os.RemoveAll(filepath.Join(repo.Path(), ".git")))
 	require.Error(t, Update(home, runtime.NumCPU()))
